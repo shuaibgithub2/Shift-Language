@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحويل النص إلى لغة الشيفت</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 60%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .output {
+            margin-top: 20px;
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+            color: #333;
+        }
+
+        .selection-buttons {
+            margin: 20px 0;
+        }
+
+        .selection-buttons button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .selection-buttons button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تحويل النص إلى لغة الشيفت</h1>
+        <p>اكتب نصًا باللغة العربية، ثم اختر نوع التحويل بين العربية ولغة الشيفت.</p>
+        <textarea id="textBox" rows="5" placeholder="اكتب هنا..."></textarea>
+
+        <div class="selection-buttons">
+            <button id="toShift">ترجمة من العربية إلى لغة الشيفت</button>
+            <button id="toArabic">ترجمة من لغة الشيفت إلى العربية</button>
+        </div>
+
+        <div class="buttons">
+            <button id="submitBtn">إرسال</button>
+            <button id="clearBtn">إلغاء</button>
+        </div>
+
+        <div id="outputText" class="output"></div>
+    </div>
+
+    <script>
+        // دالة لتحويل النص إلى لغة Shift (Shift Language)
+        function shiftLanguageConvert(text) {
+            const conversionMap = {
+                "ض": "َ", "ص": "ً", "ث": "ُ", "ق": "ٌ", "ف": "إلأ", "غ": "إ", "ع": "‘", "ه": "÷", 
+                "خ": "×", "ح": "؛", "ش": "ِ", "س": "ٍ", "ي": "]", "ب": "[", "ل": "لأ", "ا": "أ", 
+                "ت": "ـ", "ن": "،", "م": "/", "ك": ":", "ط": "\"", "ئ": "~", "ء": "ْ", "ؤ": "}", 
+                "ر": "{", "لا": "لآ", "ى": "آ", "ة": "’", "و": ",", "ز": ".", "ظ": "؟", "ج": "<", "د": ">"
+            };
+
+            return text.split('').map(char => conversionMap[char] || char).join('');
+        }
+
+        // دالة لتحويل النص من لغة Shift إلى العربية (مع تحسينات)
+        function arabicLanguageConvert(text) {
+            const reverseConversionMap = {
+                "َ": "ض", "ً": "ص", "ُ": "ث", "ٌ": "ق", "إلأ": "ف", "إ": "غ", "‘": "ع", "÷": "ه", 
+                "×": "خ", "؛": "ح", "ِ": "ش", "ٍ": "س", "]": "ي", "[": "ب", "لأ": "ل", "أ": "ا", 
+                "ـ": "ت", "،": "ن", "/": "م", ":": "ك", "\"": "ط", "~": "ئ", "ْ": "ء", "}": "ؤ", 
+                "{": "ر", "لآ": "لا", "آ": "ى", "’": "ة", ",": "و", ".": "ز", "؟": "ظ", "<": "ج", ">": "د"
+            };
+
+            let result = "";
+            let i = 0;
+            while (i < text.length) {
+                let found = false;
+                // محاولة لقراءة الرموز الثنائية أو الثلاثية أولاً (مثل "إلأ" أو "لآ")
+                for (let length = 3; length > 0; length--) {
+                    const substring = text.slice(i, i + length);
+                    if (reverseConversionMap[substring]) {
+                        result += reverseConversionMap[substring];
+                        i += length;
+                        found = true;
+                        break;
+                    }
+                }
+                // إذا لم نجد تطابق طويل، نبحث عن الرموز الأحادية
+                if (!found) {
+                    result += reverseConversionMap[text[i]] || text[i];
+                    i++;
+                }
+            }
+            return result;
+        }
+
+        // تعريف الأزرار
+        const submitBtn = document.getElementById("submitBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const textBox = document.getElementById("textBox");
+        const outputText = document.getElementById("outputText");
+        const toShiftBtn = document.getElementById("toShift");
+        const toArabicBtn = document.getElementById("toArabic");
+
+        let isToShift = true;  // حددنا بشكل مبدئي أن التحويل سيكون من العربية إلى لغة الشيفت
+
+        // حدث زر تحويل اللغة إلى الشيفت
+        toShiftBtn.addEventListener("click", function() {
+            isToShift = true;
+            toShiftBtn.style.backgroundColor = '#1976D2';
+            toArabicBtn.style.backgroundColor = '#2196F3';
+        });
+
+        // حدث زر تحويل اللغة إلى العربية
+        toArabicBtn.addEventListener("click", function() {
+            isToShift = false;
+            toArabicBtn.style.backgroundColor = '#1976D2';
+            toShiftBtn.style.backgroundColor = '#2196F3';
+        });
+
+        // حدث زر الإرسال
+        submitBtn.addEventListener("click", function() {
+            const text = textBox.value;
+            let convertedText = "";
+            
+            if (isToShift) {
+                convertedText = shiftLanguageConvert(text);  // تحويل النص من العربية إلى لغة الشيفت
+            } else {
+                convertedText = arabicLanguageConvert(text);  // تحويل النص من لغة الشيفت إلى العربية
+            }
+            
+            outputText.textContent = "النص المحول: " + convertedText;  // عرض النص المحول في الصفحة
+        });
+
+        // حدث زر الإلغاء
+        clearBtn.addEventListener("click", function() {
+            textBox.value = "";  // مسح النص في مربع الكتابة
+            outputText.textContent = "";  // مسح النص المحول
+        });
+    </script>
+</body>
+</html>
